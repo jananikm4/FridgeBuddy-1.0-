@@ -133,8 +133,20 @@ html, body, [class*="css"] { font-family: 'Nunito', sans-serif; }
 h1, h2, h3 { color: #070A3C !important; }
 p, span, div, label { color: #333 !important; }
 
-section[data-testid="stSidebar"] { background: linear-gradient(180deg, #070A3C, #062375); }
-section[data-testid="stSidebar"] * { color: white !important; }
+/* ── SIDEBAR SECTOR CRISP CONTRAST FIX ── */
+section[data-testid="stSidebar"] { 
+    background: linear-gradient(180deg, #070A3C, #062375) !important; 
+}
+section[data-testid="stSidebar"] h1,
+section[data-testid="stSidebar"] h2,
+section[data-testid="stSidebar"] h3,
+section[data-testid="stSidebar"] p,
+section[data-testid="stSidebar"] label,
+section[data-testid="stSidebar"] span,
+section[data-testid="stSidebar"] div,
+section[data-testid="stSidebar"] small { 
+    color: #ffffff !important; 
+}
 
 /* Clean UI Input Fields */
 .stTextInput input, .stDateInput input { background: white !important; color: #222 !important; border-radius: 16px !important; border: 2px solid rgba(240,102,42,0.2) !important; }
