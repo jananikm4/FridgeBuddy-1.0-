@@ -300,11 +300,10 @@ stat2.metric("Expiring/Expired", danger_count, delta=f"{danger_count} items", de
 stat3.metric("Waste Avoided", f"~{waste_prevented} lbs")
 
 feedback_message = get_mascot_feedback(processed_foods)
-st.markdown(f"""
+st.markdown("""
 <div class="mascot-box">
     <div style="font-size: 2.5rem; margin-bottom: 5px;">🥕</div>
     <div style="font-style: italic; color: #5C4033; font-weight: 600; font-size: 1.05rem;">
         "{feedback_message}"
     </div>
-</div>
-""", unsafe_allowed_html=True)
+""", unsafe_allow_html=True) #  Correct parameter name
