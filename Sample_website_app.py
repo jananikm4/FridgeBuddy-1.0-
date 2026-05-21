@@ -119,7 +119,7 @@ expired = [f for f in foods if days_left(f["expiry"]) < 0]
 expiring = [f for f in foods if 0 <= days_left(f["expiry"]) <= 2]
 
 # ════════════════════════════════════════════════
-# REFRESHED PASTEL CSS MASTER BLOCK
+# MASTER THEME AND TEXT CONTRAST OVERRIDES
 # ════════════════════════════════════════════════
 st.markdown("""
 <style>
@@ -131,27 +131,35 @@ html, body, [class*="css"] { font-family: 'Nunito', sans-serif; }
 
 .stApp { background: linear-gradient(135deg, #fff7ec, #ffe5bf, #ffd18f); }
 h1, h2, h3 { color: #070A3C !important; }
-p, span, div, label { color: #333 !important; }
 
-/* ── SIDEBAR SECTOR CRISP CONTRAST FIX ── */
+/* Main app content text color fix */
+.stApp p, .stApp span, .stApp label, .stApp div:not([data-testid="stSidebar"]) { color: #222222; }
+
+/* ── FOOLPROOF SIDEBAR TEXT FIX ── */
 section[data-testid="stSidebar"] { 
     background: linear-gradient(180deg, #070A3C, #062375) !important; 
 }
-section[data-testid="stSidebar"] h1,
-section[data-testid="stSidebar"] h2,
-section[data-testid="stSidebar"] h3,
-section[data-testid="stSidebar"] p,
-section[data-testid="stSidebar"] label,
-section[data-testid="stSidebar"] span,
-section[data-testid="stSidebar"] div,
-section[data-testid="stSidebar"] small { 
+section[data-testid="stSidebar"] * { 
     color: #ffffff !important; 
 }
 
+/* Fix input placeholder options to never be white-on-white */
+div[data-baseweb="select"] * {
+    color: #222222 !important;
+}
+
 /* Clean UI Input Fields */
-.stTextInput input, .stDateInput input { background: white !important; color: #222 !important; border-radius: 16px !important; border: 2px solid rgba(240,102,42,0.2) !important; }
-.stSelectbox > div > div { background: white !important; border-radius: 16px !important; border: 2px solid rgba(240,102,42,0.2) !important; }
-.stSelectbox div[data-baseweb="select"] span { color: #222 !important; font-weight: 700 !important; }
+.stTextInput input, .stDateInput input { 
+    background: white !important; 
+    color: #222 !important; 
+    border-radius: 16px !important; 
+    border: 2px solid rgba(240,102,42,0.2) !important; 
+}
+.stSelectbox > div > div { 
+    background: white !important; 
+    border-radius: 16px !important; 
+    border: 2px solid rgba(240,102,42,0.2) !important; 
+}
 
 /* Interactive Hover Buttons */
 .stButton > button { 
@@ -217,7 +225,7 @@ with st.sidebar:
 st.markdown("""
 <div style='text-align:center;'>
     <h1 style='font-size:4.5rem;font-weight:900;'> 🥕 FridgeBuddy </h1>
-    <p style='font-size:1.2rem; font-weight:600; opacity:0.85;'> keeping your food alive one panic notification at a time </p>
+    <p style='font-size:1.2rem; font-weight:600; opacity:0.85; color: #333333;'> keeping your food alive one panic notification at a time </p>
 </div>
 """, unsafe_allow_html=True)
 st.markdown("<br>", unsafe_allow_html=True)
@@ -266,7 +274,7 @@ if len(filtered_foods) == 0:
     st.markdown("""
     <div style='text-align:center; padding:4rem; background: rgba(255,255,255,0.6); border-radius: 24px; border: 2px dashed rgba(0,0,0,0.1);'>
         <div style='font-size:5rem;'>🫙</div>
-        <h2 style='margin-top:1rem;'>Your matching fridge contents are empty</h2>
+        <h2 style='margin-top:1rem; color: #070A3C;'>Your matching fridge contents are empty</h2>
         <p style='color:#666;'>Clear your search filters or add a new food item from the sidebar container!</p>
     </div>
     """, unsafe_allow_html=True)
