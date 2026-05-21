@@ -192,6 +192,8 @@ p, span, div, label {
     color: #333 !important;
 }
 
+/* SIDEBAR */
+
 section[data-testid="stSidebar"] {
     background:
         linear-gradient(
@@ -201,7 +203,12 @@ section[data-testid="stSidebar"] {
         );
 }
 
-section[data-testid="stSidebar"] * {
+section[data-testid="stSidebar"] label,
+section[data-testid="stSidebar"] .stMarkdown,
+section[data-testid="stSidebar"] p,
+section[data-testid="stSidebar"] h1,
+section[data-testid="stSidebar"] h2,
+section[data-testid="stSidebar"] h3 {
     color: white !important;
 }
 
@@ -215,33 +222,52 @@ section[data-testid="stSidebar"] * {
     border: 2px solid rgba(240,102,42,0.2) !important;
 }
 
-/* SELECTBOX */
+/* SELECTBOX MAIN */
 
 .stSelectbox > div > div {
     background: white !important;
+    color: #222 !important;
     border-radius: 16px !important;
-    border: 2px solid rgba(240,102,42,0.2) !important;
+    border: 2px solid rgba(240,102,42,0.25) !important;
 }
+
+/* SELECTED TEXT */
 
 .stSelectbox div[data-baseweb="select"] span {
     color: #222 !important;
     font-weight: 700 !important;
 }
 
-/* DROPDOWN */
+/* DROPDOWN MENU */
 
-div[role="listbox"] {
+div[data-baseweb="popover"] {
     background: #fff7ef !important;
     border-radius: 16px !important;
+    border: 2px solid rgba(240,102,42,0.2) !important;
 }
+
+/* OPTIONS */
 
 div[role="option"] {
+    background: transparent !important;
     color: #222 !important;
     font-weight: 700 !important;
+    border-radius: 10px !important;
+    margin: 4px !important;
 }
 
+/* OPTION HOVER */
+
 div[role="option"]:hover {
-    background: rgba(240,102,42,0.1) !important;
+    background: rgba(240,102,42,0.15) !important;
+    color: #070A3C !important;
+}
+
+/* SELECTED OPTION */
+
+div[aria-selected="true"] {
+    background: rgba(240,102,42,0.18) !important;
+    color: #070A3C !important;
 }
 
 /* BUTTONS */
