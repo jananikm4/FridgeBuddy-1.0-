@@ -282,7 +282,7 @@ else:
     for food in filtered_foods:
         d = days_left(food["expiry"])
         bg = {"expired": "#ffe5e5", "critical": "#fff0df", "warning": "#fff7df", "good": "#ffffff"}[urgency(d)]
-        
+
         # Premium nested card logic block
         st.markdown(f"""
         <div class="html-food-card" style="background: {bg}; border: 1px solid rgba(0,0,0,0.05);">
