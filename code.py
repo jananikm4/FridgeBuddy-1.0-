@@ -3,6 +3,7 @@ from datetime import date, datetime
 import json
 import os
 import random
+import re
 
 # ════════════════════════════════════════════════
 # PAGE CONFIG & CLEAN THEME
@@ -16,15 +17,15 @@ st.set_page_config(
 
 # Custom Global CSS for a clean enterprise-grade aesthetic
 st.markdown("""
-<link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
     /*Page Background*/
     [data-testid="stAppViewContainer"] {
-    background-color: #000000;
+    background-color: #ecf39e;
 }
     /* Core Typography */
     html, body, [class*="css"], .stApp, .main-title, .main-subtitle {
-        font-family: 'Ubuntu', sans-serif !important;
+        font-family: 'Merriweather', serif !important;
     }
     
     /* Elegant Title Design */
@@ -42,7 +43,7 @@ st.markdown("""
 
     /* Card styling */
     .panel-card {
-        background-color: #FFFF00; /* ◄ Changed to Black */
+        background-color: #ecf39e;
         border: 1px solid #E2E8F0;
         border-radius: 12px;
         padding: 1.25rem;
@@ -109,7 +110,7 @@ EMOJI_MAP = {
     "apple": "🍎",   "banana": "🍌",   "orange": "🍊",   "grape": "🍇",
     "strawberry": "🍓", "watermelon": "🍉", "mango": "🥭",  "peach": "🍑",
     "pear": "🍐",    "cherry": "🍒",   "lemon": "🍋",   "lime": "🍋",
-    "blueberry": "🫐", "raspberrys": "🍓", "avocado": "🥑", "pineapple": "🍍",
+    "blueberry": "🫐", "blueberries": "🫐", "raspberry": "🍓", "raspberries": "🍓", "avocado": "🥑", "pineapple": "🍍",
     "coconut": "🥥",  "kiwi": "🥝",
 
     "carrot": "🥕",  "broccoli": "🥦", "spinach": "🥬", "lettuce": "🥬",
@@ -139,11 +140,34 @@ EMOJI_MAP = {
 
 
 
+def normalize_name(name):
+    text = name.casefold()
+    text = re.sub(r"[^\w\s]", " ", text)
+    return re.sub(r"\s+", " ", text).strip()
+
+
+def singularize(word):
+    if word.endswith("ies"):
+        return word[:-3] + "y"
+    if word.endswith(("oes", "ses", "xes", "ches", "shes")):
+        return word[:-2]
+    if word.endswith("s") and len(word) > 3 and not word.endswith("ss"):
+        return word[:-1]
+    return word
+
+
 def detect_emoji(name, category):
-    lower = name.lower()
+    normalized = normalize_name(name)
     for keyword, emoji in EMOJI_MAP.items():
-        if keyword in lower:
+        if keyword in normalized:
             return emoji
+
+    for token in normalized.split():
+        token = singularize(token)
+        for keyword, emoji in EMOJI_MAP.items():
+            if keyword == token:
+                return emoji
+
     return CATEGORY_EMOJIS.get(category, "🍽️")
 
 # ════════════════════════════════════════════════
@@ -177,7 +201,13 @@ def add_food(name, category, expiry):
         "expiry": expiry.strftime("%Y-%m-%d")
     }
     st.session_state.foods.append(food)
+
     save_foods(st.session_state.foods)
+
+def add_foods(names, category, expiry):
+    for name in names:
+        add_food(name, category, expiry)
+
 
 def delete_food(food_id):
     st.session_state.foods = [f for f in st.session_state.foods if f["id"] != food_id]
@@ -200,12 +230,21 @@ with st.sidebar:
         st.caption(f"Auto-assigned Icon: {detect_emoji(add_name, add_cat)}")
         
     if st.button("➕ Log Item to Fridge", use_container_width=True, type="primary"):
-        if not add_name.strip():
+        raw_names = add_name.strip()
+        if not raw_names:
             st.error("Please specify a valid item name.")
         else:
-            add_food(add_name.strip(), add_cat, add_expiry)
-            st.success(f"Added {add_name.strip()}!")
-            st.rerun()
+            names = [n.strip() for n in re.split(r"[,\n;]+", raw_names) if n.strip()]
+            if not names:
+                st.error("Please specify at least one valid item name.")
+            else:
+                if len(names) == 1:
+                    add_food(names[0], add_cat, add_expiry)
+                    st.success(f"Added {names[0]}!")
+                else:
+                    add_foods(names, add_cat, add_expiry)
+                    st.success(f"Added {len(names)} items: {', '.join(names)}")
+                st.rerun()
 
 # ════════════════════════════════════════════════
 # APP CONTAINER & STATISTICS
@@ -238,9 +277,9 @@ with ctrl_col2:
 
 filtered_foods = foods
 if selected_category != "All Categories":
-    filtered_foods = [f for f in filtered_foods if f["category"] == selected_category]
+    filtered_foods = [f for f in filtered_foods if f["category"].casefold() == selected_category.casefold()]
 if search.strip():
-    filtered_foods = [f for f in filtered_foods if search.lower() in f["name"].lower()]
+    filtered_foods = [f for f in filtered_foods if search.casefold() in f["name"].casefold()]
 
 # Bulk Clean-Up Button
 if expired:
