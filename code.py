@@ -4,6 +4,7 @@ import json
 import os
 import random
 import re
+import pandas as pd  # ◄ Imported Pandas for data validation
 
 # ════════════════════════════════════════════════
 # PAGE CONFIG & CLEAN THEME
@@ -32,7 +33,7 @@ st.markdown("""
     .main-title {
         font-size: 2.75rem;
         font-weight: 700;
-        color: #FFFFFF; /* ◄ Changed to White */
+        color: #FFFFFF; 
         margin-bottom: 0.25rem;
     }
     .main-subtitle {
@@ -135,16 +136,58 @@ EMOJI_MAP = {
     "tea": "🍵",     "beer": "🍺",    "wine": "🍷",    "milk tea": "🧋",
 
     "leftover": "🍱", "soup": "🍲",   "salad": "🥗",   "sauce": "🫙",
-    "jam": "🫙",      "honey": "🍯",  "oil": "🫙",     "vinegar": "🫙",
+    "jam": "🫙",      "honey": "🍯",  "oil": "🫙",      "vinegar": "🫙",
 }
 
+# ════════════════════════════════════════════════
+# PANDAS VALIDATION ENGINE
+# ════════════════════════════════════════════════
+# Turn the food vocabulary keys into a clean, queryable Pandas DataFrame
+FOOD_DATABASE_DF = pd.DataFrame(list(EMOJI_MAP.keys()), columns=["allowed_item"])
 
+def validate_and_extract_food_item(user_input):
+    """
+    Validates user text inputs against the allowed items in our Pandas database.
+    Rejects pure numbers, non-food gibberish, and strings with no recognizable edible tokens.
+    """
+    # 1. Clean up the user input text completely
+    cleaned = user_input.casefold().strip()
+    cleaned = re.sub(r"[^\w\s]", " ", cleaned)
+    cleaned = re.sub(r"\s+", " ", cleaned).strip()
+    
+    # Reject empty submissions, symbols, or numeric strings instantly
+    if not cleaned or cleaned.isdigit():
+        return None
 
+    # 2. Direct lookup: Is the full input phrase found within our DataFrame index rows?
+    match_mask = FOOD_DATABASE_DF["allowed_item"].apply(lambda x: x in cleaned)
+    if match_mask.any():
+        # Retrieve the exact matched vocabulary keyword token string value
+        return FOOD_DATABASE_DF[match_mask]["allowed_item"].values[0]
+
+    # 3. Token checking fallback: Break the query text apart to isolate and singularize words
+    for token in cleaned.split():
+        if token.endswith("ies"):
+            token = token[:-3] + "y"
+        elif token.endswith(("oes", "ses", "xes", "ches", "shes")):
+            token = token[:-2]
+        elif token.endswith("s") and len(token) > 3 and not token.endswith("ss"):
+            token = token[:-1]
+            
+        # Is this single token listed inside our database dictionary table rows?
+        token_mask = FOOD_DATABASE_DF["allowed_item"] == token
+        if token_mask.any():
+            return FOOD_DATABASE_DF[token_mask]["allowed_item"].values[0]
+            
+    return None
+
+# ════════════════════════════════════════════════
+# CORE TEXT CONVERSION ALGORITHMS
+# ════════════════════════════════════════════════
 def normalize_name(name):
     text = name.casefold()
     text = re.sub(r"[^\w\s]", " ", text)
     return re.sub(r"\s+", " ", text).strip()
-
 
 def singularize(word):
     if word.endswith("ies"):
@@ -154,7 +197,6 @@ def singularize(word):
     if word.endswith("s") and len(word) > 3 and not word.endswith("ss"):
         return word[:-1]
     return word
-
 
 def detect_emoji(name, category):
     normalized = normalize_name(name)
@@ -201,13 +243,11 @@ def add_food(name, category, expiry):
         "expiry": expiry.strftime("%Y-%m-%d")
     }
     st.session_state.foods.append(food)
-
     save_foods(st.session_state.foods)
 
 def add_foods(names, category, expiry):
     for name in names:
         add_food(name, category, expiry)
-
 
 def delete_food(food_id):
     st.session_state.foods = [f for f in st.session_state.foods if f["id"] != food_id]
@@ -226,24 +266,45 @@ with st.sidebar:
     add_cat = st.selectbox("Category Group", list(CATEGORY_EMOJIS.keys()))
     add_expiry = st.date_input("Expiration Date", value=date.today())
     
+    # Streamline interactive feedback loops using our validation logic 
     if add_name.strip():
-        st.caption(f"Auto-assigned Icon: {detect_emoji(add_name, add_cat)}")
+        validated_result = validate_and_extract_food_item(add_name)
+        if validated_result:
+            st.caption(f"Auto-assigned Icon: {detect_emoji(add_name, add_cat)}")
+        else:
+            st.caption("⚠️ This item is unrecognized and will be rejected.")
         
     if st.button("➕ Log Item to Fridge", use_container_width=True, type="primary"):
         raw_names = add_name.strip()
         if not raw_names:
             st.error("Please specify a valid item name.")
         else:
-            names = [n.strip() for n in re.split(r"[,\n;]+", raw_names) if n.strip()]
-            if not names:
+            # Parse commas, semicolons, and newlines for batch logs
+            potential_names = [n.strip() for n in re.split(r"[,\n;]+", raw_names) if n.strip()]
+            
+            # Validation Step: Filter inputs through our Pandas dictionary
+            valid_names = []
+            invalid_entries = []
+            
+            for item in potential_names:
+                if validate_and_extract_food_item(item) is not None:
+                    valid_names.append(item)
+                else:
+                    invalid_entries.append(item)
+            
+            # Error Alert: Block entry completely if inedible elements are found
+            if invalid_entries:
+                st.error(f"❌ Rejected! '{', '.join(invalid_entries)}' doesn't look like something that belongs in a fridge.")
+            elif not valid_names:
                 st.error("Please specify at least one valid item name.")
             else:
-                if len(names) == 1:
-                    add_food(names[0], add_cat, add_expiry)
-                    st.success(f"Added {names[0]}!")
+                # Add only safe items to storage files
+                if len(valid_names) == 1:
+                    add_food(valid_names[0], add_cat, add_expiry)
+                    st.success(f"Added {valid_names[0]}!")
                 else:
-                    add_foods(names, add_cat, add_expiry)
-                    st.success(f"Added {len(names)} items: {', '.join(names)}")
+                    add_foods(valid_names, add_cat, add_expiry)
+                    st.success(f"Added {len(valid_names)} items: {', '.join(valid_names)}")
                 st.rerun()
 
 # ════════════════════════════════════════════════
@@ -304,7 +365,6 @@ else:
         d = days_left(food["expiry"])
         label, indicator = get_status_details(d)
         
-        # Using built-in containers with subtle custom markup for precise alignment
         with st.container():
             col_icon, col_details, col_progress, col_action = st.columns([0.5, 2.5, 4, 1])
             
