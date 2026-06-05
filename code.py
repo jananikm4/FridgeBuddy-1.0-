@@ -1,3 +1,4 @@
+from click import style
 import streamlit as st 
 from datetime import date, datetime
 import json
@@ -16,61 +17,7 @@ st.set_page_config(
 )
 
 # Custom Global CSS for a clean enterprise-grade aesthetic
-st.markdown("""
-<link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-    /*Page Background*/
-    [data-testid="stAppViewContainer"] {
-    background-color: #ecf39e;
-}
-    /* Core Typography */
-    html, body, [class*="css"], .stApp, .main-title, .main-subtitle {
-        font-family: 'Merriweather', serif !important;
-    }
-    
-    /* Elegant Title Design */
-    .main-title {
-        font-size: 2.75rem;
-        font-weight: 700;
-        color: #FFFFFF; /* ◄ Changed to White */
-        margin-bottom: 0.25rem;
-    }
-    .main-subtitle {
-        font-size: 1.05rem;
-        color: #64748B;
-        margin-bottom: 2rem;
-    }
-
-    /* Card styling */
-    .panel-card {
-        background-color: #ecf39e;
-        border: 1px solid #E2E8F0;
-        border-radius: 12px;
-        padding: 1.25rem;
-        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
-        margin-bottom: 1rem;
-    }
-    
-    /* Action Panels (Recipe / Mascot) */
-    .action-panel {
-        border-radius: 12px;
-        padding: 1.5rem;
-        height: 100%;
-    }
-    .recipe-bg {
-        background: linear-gradient(135deg, #FFF7ED 0%, #FFEDD5 100%);
-        border: 1px solid #FED7AA;
-    }
-    .mascot-bg {
-        background: linear-gradient(135deg, #F0FDF4 0%, #DCFCE7 100%);
-        border: 1px solid #BBF7D0;
-    }
-    
-    /* Remove default padding overheads */
-    .block-container { padding-top: 2.5rem; }
-    footer { visibility: hidden; }
-</style>
-""", unsafe_allow_html=True)
+# (Merged later in file to avoid nested string literals)
 
 # ════════════════════════════════════════════════
 # STORAGE LAYER
@@ -140,6 +87,66 @@ EMOJI_MAP = {
 
 
 
+st.markdown("""
+<link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+
+    /* Core Typography */
+    html, body, [class*="css"], .stApp, .main-title, .main-subtitle {
+        font-family: 'Merriweather', serif !important;
+    }
+
+    /* Page Background */
+    body, .stApp, .block-container {
+        background-color: #a53860 !important;
+    }
+
+    /* Elegant Title Design */
+    .main-title {
+        font-size: 2.75rem;
+        font-weight: 700;
+        color: #FFFFFF;
+        margin-bottom: 0.25rem;
+    }
+    .main-subtitle {
+        font-size: 1.05rem;
+        color: #64748B;
+        margin-bottom: 2rem;
+    }
+
+    /* Card styling */
+    /*
+    .panel-card {
+        background-color: #a53860 !important;
+        border: 1px solid #000000 !important;
+        border-radius: 12px;
+        padding: 1.25rem;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+        margin-bottom: 1rem;
+    }
+    */
+
+    /* Action Panels (Recipe / Mascot) */
+    .action-panel {
+        border-radius: 12px;
+        padding: 1.5rem;
+        height: 100%;
+    }
+    .recipe-bg {
+        background: linear-gradient(135deg, #FFF7ED 0%, #FFEDD5 100%);
+        border: 1px solid #FED7AA;
+    }
+    .mascot-bg {
+        background: linear-gradient(135deg, #F0FDF4 0%, #DCFCE7 100%);
+        border: 1px solid #BBF7D0;
+    }
+
+    /* Remove default padding overheads */
+    .block-container { padding-top: 2.5rem; }
+    footer { visibility: hidden; }
+</style>
+""", unsafe_allow_html=True)
+
 def normalize_name(name):
     text = name.casefold()
     text = re.sub(r"[^\w\s]", " ", text)
@@ -170,15 +177,14 @@ def detect_emoji(name, category):
 
     return CATEGORY_EMOJIS.get(category, "🍽️")
 
-# ════════════════════════════════════════════════
-# UTILITIES
-# ════════════════════════════════════════════════
+
 def days_left(expiry):
     try:
         expiry_date = datetime.strptime(expiry, "%Y-%m-%d").date()
         return (expiry_date - date.today()).days
     except:
         return 0
+
 
 def get_status_details(days):
     if days < 0:
@@ -189,9 +195,7 @@ def get_status_details(days):
         return "Expires tomorrow", "🟡"
     return f"{days} days left", "🟢"
 
-# ════════════════════════════════════════════════
-# DATA ACTIONS
-# ════════════════════════════════════════════════
+
 def add_food(name, category, expiry):
     food = {
         "id": str(datetime.now().timestamp()),
