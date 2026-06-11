@@ -23,7 +23,7 @@ st.markdown("""
 <style>
     /*Page Background*/
     [data-testid="stAppViewContainer"] {
-    background-color: #ecf39e;
+    background-color: #f4f1de;
 }
     /* Core Typography */
     html, body, [class*="css"], .stApp, .main-title, .main-subtitle {
@@ -45,7 +45,7 @@ st.markdown("""
 
     /* Card styling */
     .panel-card {
-        background-color: #ecf39e;
+        background-color: #f1f2f6;
         border: 1px solid #E2E8F0;
         border-radius: 12px;
         padding: 1.25rem;
@@ -186,6 +186,11 @@ def detect_emoji(name, category):
     for item, emoji in EMOJI_MAP.items():
         if item in clean_name: return emoji
     return CATEGORY_EMOJIS.get(category, "🍽️")
+
+
+def is_edible(name):
+    clean_name = name.lower().strip()
+    return any(item in clean_name for item in EMOJI_MAP.keys())
 
 # ════════════════════════════════════════════════
 # UTILITIES
